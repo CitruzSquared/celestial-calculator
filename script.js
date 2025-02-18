@@ -39,9 +39,9 @@ body.innerHTML += "<p> Moon sidereal period: " + moon_period.toString() + " dy <
 body.innerHTML += "<p> Moon synodic period: " + moon_synodic.toString() + " dy </p>";
 
 body.innerHTML += "<h2> Calendar Properties </h2>";
-body.innerHTML += "<p> Solar calendar leaps: " + dec_to_frac(earth_period).join(", ") + "</p>";
-body.innerHTML += "<p> Lunar calendar leaps: " + dec_to_frac(moon_synodic).join(", ") + "</p>";
-body.innerHTML += "<p> Lunisolar calendar leaps: " + dec_to_frac(earth_period/moon_synodic).join(", ") + "</p>";
+body.innerHTML += "<p> Solar calendar leaps: " + Math.floor(earth_period).toString() + " + " + dec_to_frac(earth_period).join(", ") + "</p>";
+body.innerHTML += "<p> Lunar calendar leaps: " + Math.floor(moon_synodic).toString() + " + " + dec_to_frac(moon_synodic).join(", ") + "</p>";
+body.innerHTML += "<p> Lunisolar calendar leaps: " + Math.floor(earth_period / moon_synodic).toString() + " + " + dec_to_frac(earth_period/moon_synodic).join(", ") + "</p>";
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
