@@ -69,5 +69,3 @@ function dec_to_frac(number) {
 	}
 	return(fracs);
 }
-
-console.log(dec_to_frac(pi));
