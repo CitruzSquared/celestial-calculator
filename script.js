@@ -56,11 +56,9 @@ function dec_to_frac(number) {
 		denoms.push(Math.floor(reciprocal));
 		decimal = reciprocal - Math.floor(reciprocal);
 	}
-	console.log(denoms);
 	for (let i = 0; i < 10; i++) {
 		let numerator = 1;
 		let denominator = denoms[i];
-		console.log(" ");
 		for (let j = i - 1; j >= 0; j--) {
 			numerator_copy = numerator;
 			numerator = denominator;
