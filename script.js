@@ -31,10 +31,12 @@ var moon_period = period(earth_mass, moon_mass, moon_sma);
 earth_period = 365.256363004;
 var moon_period = 27.321661554
 var moon_synodic = earth_period * moon_period / (earth_period - moon_period);
-var m = earth_period / moon_period;
+var m =  moon_period / earth_period;
 var months_in_year = earth_period / moon_synodic;
 
 var seasons = calculate_seasons();
+
+var precessions = calculate_precessions(m);
 
 body.innerHTML += "<h2> Basic Orbital Properties </h2>";
 body.innerHTML += "<p> Earth periapsis: " + earth_periapsis.toString() + " km </p>";
@@ -71,6 +73,12 @@ body.innerHTML += "<p> Northern Solar Autumn length: " + seasons[2][2].toString(
 body.innerHTML += "<p> Northern Solar Winter length: " + seasons[2][3].toString() + " dy </p>";
 
 body.innerHTML += "<h2> Eclipse Properties </h2>";
+body.innerHTML += "<p> Lunar nodal precession: " + precessions[0].toString() + " dy/rev </p>";
+body.innerHTML += "<p> Lunar apsidal precession: " + precessions[1].toString() + " dy/rev </p>";
+body.innerHTML += "<p> Draconic month: " + precessions[2].toString() + " dy </p>";
+body.innerHTML += "<p> Anomalistic month: " + precessions[3].toString() + " dy </p>";
+body.innerHTML += "<p> Eclipse year: " + precessions[4].toString() + " dy </p>";
+body.innerHTML += "<p> Eclipse cycles: " + dec_to_frac(moon_synodic/(precessions[4]/2)).join(" or ") + " half-E.Y./S.M.</p>";
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
@@ -101,20 +109,20 @@ function dec_to_frac(number) {
 }
 
 function date_from_longitude(longitude) {
-	var heliocentric_longitude = longitude - pi;
+	let heliocentric_longitude = longitude - pi;
 	if (heliocentric_longitude < 0) {
 		heliocentric_longitude = heliocentric_longitude + 2 * pi;
 	}
-	var true_anomaly = heliocentric_longitude - earth_AOP;
+	let true_anomaly = heliocentric_longitude - earth_AOP;
 	if (true_anomaly < 0) {
 		true_anomaly += 2 * pi;
 	}
-	var eccentric = Math.acos((earth_eccentricity + Math.cos(true_anomaly)) / (1 + earth_eccentricity * Math.cos(true_anomaly)));
+	let eccentric = Math.acos((earth_eccentricity + Math.cos(true_anomaly)) / (1 + earth_eccentricity * Math.cos(true_anomaly)));
 	if (true_anomaly > pi) {
 		eccentric = eccentric * -1;
 	}
-	var mean_anomaly = eccentric - earth_eccentricity * Math.sin(eccentric);
-	var date = mean_anomaly * earth_period / (2 * pi);
+	let mean_anomaly = eccentric - earth_eccentricity * Math.sin(eccentric);
+	let date = mean_anomaly * earth_period / (2 * pi);
 	if (date < 0) {
 		date += earth_period;
 	}
@@ -122,10 +130,10 @@ function date_from_longitude(longitude) {
 }
 
 function calculate_seasons() {
-	var terms = [-pi/4, 0, pi/4, pi/2, 3*pi/4, pi, -3*pi/4, -pi/2, -pi/4, 0]
-	var dates = [];
-	var astro_seasons = [];
-	var solar_seasons = [];
+	let terms = [-pi/4, 0, pi/4, pi/2, 3*pi/4, pi, -3*pi/4, -pi/2, -pi/4, 0]
+	let dates = [];
+	let astro_seasons = [];
+	let solar_seasons = [];
 	for (let i = 0; i < terms.length; i++) {
 		dates.push(date_from_longitude(terms[i]));
 	}
@@ -143,4 +151,19 @@ function calculate_seasons() {
 
 	}
 	return [dates, astro_seasons, solar_seasons];
+}
+
+function calculate_precessions(m) {
+	let nodal = -3/4*m + 9/32*Math.pow(m,2) + 273/128*Math.pow(m,3) + 9797/2048*Math.pow(m,4) + 199273/24576*Math.pow(m,5) + 6657733/589825*Math.pow(m,6);
+	let apsidal = 3/4*m + 225/32*Math.pow(m,2) + 4071/128*Math.pow(m,3) + 265493/2048*Math.pow(m,4) + 12822631/24576*Math.pow(m,5) + 1273925965/589824*Math.pow(m,6) + 66702631253/7077888*Math.pow(m,7) + 29726828924189/679477248*Math.pow(m,8);
+	nodal = 	1/nodal * earth_period;
+	apsidal = 1/apsidal * earth_period;
+
+	nodal = -6793.47709618;
+	apsidal = 3233.0;
+
+	let draconic = -nodal * moon_period / (-nodal + moon_period);
+	let anomalistic = apsidal * moon_period / (apsidal - moon_period);
+	let eclipse_year = -nodal * earth_period / (-nodal + earth_period);
+	return [nodal, apsidal , draconic, anomalistic, eclipse_year];
 }
