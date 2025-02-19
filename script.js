@@ -19,15 +19,22 @@ var moon_inclination = 0.08979719001;
 
 var body = document.body;
 
+// --------------------
 
-
-var earth_period = period(sun_mass, earth_mass, earth_sma);
-var moon_period = period(earth_mass, moon_mass, moon_sma);
-var moon_synodic = earth_period * moon_period / (earth_period - moon_period);
 var earth_periapsis = earth_sma * (1 - earth_eccentricity);
 var earth_apoapsis = earth_sma * (1 + earth_eccentricity);
 var moon_periapsis = moon_sma * (1 - moon_eccentricity);
 var moon_apoapsis = moon_sma * (1 + moon_eccentricity);
+
+var earth_period = period(sun_mass, earth_mass, earth_sma);
+var moon_period = period(earth_mass, moon_mass, moon_sma);
+earth_period = 365.256363004;
+var moon_period = 27.321661554
+var moon_synodic = earth_period * moon_period / (earth_period - moon_period);
+var m = earth_period / moon_period;
+var months_in_year = earth_period / moon_synodic;
+
+var seasons = calculate_seasons();
 
 body.innerHTML += "<h2> Basic Orbital Properties </h2>";
 body.innerHTML += "<p> Earth periapsis: " + earth_periapsis.toString() + " km </p>";
@@ -37,26 +44,49 @@ body.innerHTML += "<p> Moon apoapsis: " + moon_apoapsis.toString() + " km </p>";
 body.innerHTML += "<p> Earth period: " + earth_period.toString() + " dy </p>";
 body.innerHTML += "<p> Moon sidereal period: " + moon_period.toString() + " dy </p>";
 body.innerHTML += "<p> Moon synodic period: " + moon_synodic.toString() + " dy </p>";
+body.innerHTML += "<p> Earth-Moon period ratio: " + m.toString() + "</p>";
+body.innerHTML += "<p> Earth-Moon synodic ratio: " + months_in_year.toString() + "</p>";
 
 body.innerHTML += "<h2> Calendar Properties </h2>";
-body.innerHTML += "<p> Solar calendar leaps: " + Math.floor(earth_period).toString() + " + " + dec_to_frac(earth_period).join(", ") + " dy/yr </p>";
-body.innerHTML += "<p> Lunar calendar leaps: " + Math.floor(moon_synodic).toString() + " + " + dec_to_frac(moon_synodic).join(", ") + " dy/mn </p>";
-body.innerHTML += "<p> Lunisolar calendar leaps: " + Math.floor(earth_period / moon_synodic).toString() + " + " + dec_to_frac(earth_period/moon_synodic).join(", ") + " mn/yr</p>";
+body.innerHTML += "<p> Solar calendar leaps: " + dec_to_frac(earth_period).join(" or ") + " dy/yr </p>";
+body.innerHTML += "<p> Lunar calendar leaps: " + dec_to_frac(moon_synodic).join(" or ") + " dy/mn </p>";
+body.innerHTML += "<p> Lunisolar calendar leaps: " + dec_to_frac(earth_period/moon_synodic).join(" or ") + " mn/yr</p>";
+
+body.innerHTML += "<h2> Seasonal Properties </h2>";
+body.innerHTML += "<p> Northern Lichun / Imbolc: " + seasons[0][0].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Spring Equinox: " + seasons[0][1].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Lixia / Bealtaine: " + seasons[0][2].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Summer Solstice: " + seasons[0][3].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Liqiu / Lunasa: " + seasons[0][4].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Autumn Equinox: " + seasons[0][5].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Lidong / Samhain: " + seasons[0][6].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Winter Solstice: " + seasons[0][7].toString() + " dy after periapsis </p>";
+body.innerHTML += "<p> Northern Astronomical Spring length: " + seasons[1][0].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Astronomical Summer length: " + seasons[1][1].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Astronomical Autumn length: " + seasons[1][2].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Astronomical Winter length: " + seasons[1][3].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Solar Spring length: " + seasons[2][0].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Solar Summer length: " + seasons[2][1].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Solar Autumn length: " + seasons[2][2].toString() + " dy </p>";
+body.innerHTML += "<p> Northern Solar Winter length: " + seasons[2][3].toString() + " dy </p>";
+
+body.innerHTML += "<h2> Eclipse Properties </h2>";
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
 }
 
 function dec_to_frac(number) {
+	let num_approxs = 10;
 	let decimal = number - Math.floor(number);
 	let denoms = [];
 	let fracs = [];
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < num_approxs; i++) {
 		let reciprocal = 1 / decimal;
 		denoms.push(Math.floor(reciprocal));
 		decimal = reciprocal - Math.floor(reciprocal);
 	}
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < num_approxs; i++) {
 		let numerator = 1;
 		let denominator = denoms[i];
 		for (let j = i - 1; j >= 0; j--) {
@@ -68,4 +98,49 @@ function dec_to_frac(number) {
 		fracs.push(numerator.toString() + "/" + denominator.toString());
 	}
 	return(fracs);
+}
+
+function date_from_longitude(longitude) {
+	var heliocentric_longitude = longitude - pi;
+	if (heliocentric_longitude < 0) {
+		heliocentric_longitude = heliocentric_longitude + 2 * pi;
+	}
+	var true_anomaly = heliocentric_longitude - earth_AOP;
+	if (true_anomaly < 0) {
+		true_anomaly += 2 * pi;
+	}
+	var eccentric = Math.acos((earth_eccentricity + Math.cos(true_anomaly)) / (1 + earth_eccentricity * Math.cos(true_anomaly)));
+	if (true_anomaly > pi) {
+		eccentric = eccentric * -1;
+	}
+	var mean_anomaly = eccentric - earth_eccentricity * Math.sin(eccentric);
+	var date = mean_anomaly * earth_period / (2 * pi);
+	if (date < 0) {
+		date += earth_period;
+	}
+	return date;
+}
+
+function calculate_seasons() {
+	var terms = [-pi/4, 0, pi/4, pi/2, 3*pi/4, pi, -3*pi/4, -pi/2, -pi/4, 0]
+	var dates = [];
+	var astro_seasons = [];
+	var solar_seasons = [];
+	for (let i = 0; i < terms.length; i++) {
+		dates.push(date_from_longitude(terms[i]));
+	}
+	for (let i = 0; i < terms.length - 2; i += 2) {
+		var astro_season_length = dates[i + 3] - dates[i + 1];
+		if (astro_season_length < 0) {
+			astro_season_length += earth_period;
+		}
+		var solar_season_length = dates[i + 2] - dates[i];
+		if (solar_season_length < 0) {
+			solar_season_length += earth_period;
+		}
+		astro_seasons.push(astro_season_length);
+		solar_seasons.push(solar_season_length);
+
+	}
+	return [dates, astro_seasons, solar_seasons];
 }
