@@ -78,7 +78,7 @@ body.innerHTML += "<p> Lunar apsidal precession: " + precessions[1].toString() +
 body.innerHTML += "<p> Draconic month: " + precessions[2].toString() + " dy </p>";
 body.innerHTML += "<p> Anomalistic month: " + precessions[3].toString() + " dy </p>";
 body.innerHTML += "<p> Eclipse year: " + precessions[4].toString() + " dy </p>";
-body.innerHTML += "<p> Eclipse cycles: " + dec_to_frac(moon_synodic/(precessions[4]/2)).join(" or ") + " half-E.Y./S.M.</p>";
+body.innerHTML += "<p> Eclipse cycles: " + dec_to_frac((precessions[2]/2)/moon_synodic).join(" or ") + " S.M./half-D.M.</p>";
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
