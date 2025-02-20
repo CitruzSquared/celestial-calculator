@@ -34,54 +34,342 @@ var moon_synodic = earth_period * moon_period / (earth_period - moon_period);
 var m =  moon_period / earth_period;
 var months_in_year = earth_period / moon_synodic;
 
-var seasons = calculate_seasons();
-
-var precessions = calculate_precessions(m);
-
-body.innerHTML += "<h2> Basic Orbital Properties </h2>";
-body.innerHTML += "<p> Earth periapsis: " + earth_periapsis.toString() + " km </p>";
-body.innerHTML += "<p> Earth apoapsis: " + earth_apoapsis.toString() + " km </p>";
-body.innerHTML += "<p> Moon periapsis: " + moon_periapsis.toString() + " km </p>";
-body.innerHTML += "<p> Moon apoapsis: " + moon_apoapsis.toString() + " km </p>";
-body.innerHTML += "<p> Earth period: " + earth_period.toString() + " dy </p>";
-body.innerHTML += "<p> Moon sidereal period: " + moon_period.toString() + " dy </p>";
-body.innerHTML += "<p> Moon synodic period: " + moon_synodic.toString() + " dy </p>";
-body.innerHTML += "<p> Earth-Moon period ratio: " + m.toString() + "</p>";
-body.innerHTML += "<p> Earth-Moon synodic ratio: " + months_in_year.toString() + "</p>";
+body.innerHTML += "<h2> Basic Properties </h2>";
+const basic_table = document.createElement("table");
+basic_table.innerHTML = `
+<thead>
+<tr> <td colspan="3"> Orbital Properties </td> </tr>
+<tr> 
+	<td> Property </td>
+	<td> Earth </td>
+	<td> Moon </td>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td> Periapsis (km) </td>
+	<td> ${earth_periapsis} </td>
+	<td> ${moon_periapsis} </td>
+</tr>
+<tr>
+	<td> Apoapsis (km) </td>
+	<td> ${earth_apoapsis} </td>
+	<td> ${moon_apoapsis} </td>
+</tr>
+<tr>
+	<td> Sidereal Period (days) </td>
+	<td> ${earth_period} </td>
+	<td> ${moon_period} </td>
+</tr>
+<tr>
+	<td> Synodic Period (days) </td>
+	<td> - </td>
+	<td> ${moon_synodic} </td>
+</tr>
+<tr>
+	<td> Surface Gravity (m/s/s) </td>
+	<td> ${surface_gravity(earth_mass, earth_radius)} </td>
+	<td> ${surface_gravity(moon_mass, moon_radius)} </td>
+</tr>
+</tbody>
+`;
+body.appendChild(basic_table);
 
 body.innerHTML += "<h2> Calendar Properties </h2>";
-body.innerHTML += "<p> Solar calendar leaps: " + dec_to_frac(earth_period).join(" or ") + " dy/yr </p>";
-body.innerHTML += "<p> Lunar calendar leaps: " + dec_to_frac(moon_synodic).join(" or ") + " dy/mn </p>";
-body.innerHTML += "<p> Lunisolar calendar leaps: " + dec_to_frac(earth_period/moon_synodic).join(" or ") + " mn/yr</p>";
+const solar_calendar_table = document.createElement("table");
+solar_calendar_table.innerHTML = `
+<thead>
+<tr> <td colspan="2"> Solar Calendar Properties </td> </tr>
+<tr> 
+	<td> Days in Year </td>
+	<td> ${Math.floor(earth_period)} </td>
+</tr>
+<tr> <td colspan="2"> </td> </tr>
+<tr> 
+	<td> Leap Days per Years </td>
+	<td> Error (years/1day) </td>
+</tr>
+</thead>
+<tbody>
+`;
+
+var solar_leaps = dec_to_frac(earth_period);
+for (let i = 0; i < solar_leaps.length; i++) {
+	solar_calendar_table.innerHTML += "<tr> <td>" + solar_leaps[i][0].toString() + " / " + solar_leaps[i][1].toString() + "</td> <td>" + (1/(Math.floor(earth_period) + solar_leaps[i][0]/solar_leaps[i][1] - earth_period)).toString() + "</td> </tr>";
+}
+solar_calendar_table.innerHTML += "</tbody>";
+body.appendChild(solar_calendar_table);
+
+const lunar_calendar_table = document.createElement("table");
+lunar_calendar_table.innerHTML = `
+<thead>
+<tr> <td colspan="2"> Lunar Calendar Properties </td> </tr>
+<tr> 
+	<td> Days in Short Month </td>
+	<td> ${Math.floor(moon_synodic)} </td>
+</tr>
+<tr> 
+	<td> Months in Year </td>
+	<td> ${Math.floor(months_in_year)} </td>
+</tr>
+<tr> 
+	<td> Drift per Year (days) </td>
+	<td> ${moon_synodic * Math.floor(months_in_year) - earth_period} </td>
+</tr>
+<tr> <td colspan="2"> </td> </tr>
+<tr> 
+	<td> Long Months per Months </td>
+	<td> Error (months/1day) </td>
+</tr>
+</thead>
+<tbody>
+`;
+
+var lunar_leaps = dec_to_frac(moon_synodic);
+for (let i = 0; i < lunar_leaps.length; i++) {
+	lunar_calendar_table.innerHTML += "<tr> <td>" + lunar_leaps[i][0].toString() + " / " + lunar_leaps[i][1].toString() + "</td> <td>" + (1/(Math.floor(moon_synodic) + lunar_leaps[i][0]/lunar_leaps[i][1] - moon_synodic)).toString() + "</td> </tr>";
+}
+
+lunar_calendar_table.innerHTML += "</tbody>";
+body.appendChild(lunar_calendar_table);
+
+const lunisolar_calendar_table = document.createElement("table");
+lunisolar_calendar_table.innerHTML = `
+<thead>
+<tr> <td colspan="2"> Lunisolar Calendar Properties </td> </tr>
+<tr> 
+	<td> Days in Short Month </td>
+	<td> ${Math.floor(moon_synodic)} </td>
+</tr>
+<tr> 
+	<td> Months in Year </td>
+	<td> ${Math.floor(months_in_year)} </td>
+</tr>
+<tr> <td colspan="2"> </td> </tr>
+<tr> 
+	<td> Leap Months per Years </td>
+	<td> Error (years/1month) </td>
+</tr>
+</thead>
+<tbody>
+`;
+
+var lunisolar_leaps = dec_to_frac(months_in_year);
+for (let i = 0; i < lunisolar_leaps.length; i++) {
+	lunisolar_calendar_table.innerHTML += "<tr> <td>" + lunisolar_leaps[i][0].toString() + " / " + lunisolar_leaps[i][1].toString() + "</td> <td>" + (1/(Math.floor(months_in_year) + lunisolar_leaps[i][0]/lunisolar_leaps[i][1] - months_in_year)).toString() + "</td> </tr>";
+}
+lunisolar_calendar_table.innerHTML += "</tbody>";
+body.appendChild(lunisolar_calendar_table);
 
 body.innerHTML += "<h2> Seasonal Properties </h2>";
-body.innerHTML += "<p> Northern Lichun / Imbolc: " + seasons[0][0].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Spring Equinox: " + seasons[0][1].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Lixia / Bealtaine: " + seasons[0][2].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Summer Solstice: " + seasons[0][3].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Liqiu / Lunasa: " + seasons[0][4].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Autumn Equinox: " + seasons[0][5].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Lidong / Samhain: " + seasons[0][6].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Winter Solstice: " + seasons[0][7].toString() + " dy after periapsis </p>";
-body.innerHTML += "<p> Northern Astronomical Spring length: " + seasons[1][0].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Astronomical Summer length: " + seasons[1][1].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Astronomical Autumn length: " + seasons[1][2].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Astronomical Winter length: " + seasons[1][3].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Solar Spring length: " + seasons[2][0].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Solar Summer length: " + seasons[2][1].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Solar Autumn length: " + seasons[2][2].toString() + " dy </p>";
-body.innerHTML += "<p> Northern Solar Winter length: " + seasons[2][3].toString() + " dy </p>";
+var seasons = calculate_seasons();
+
+const solar_terms_table = document.createElement("table");
+solar_terms_table.innerHTML = `
+<thead>
+<tr> <td colspan="3"> Solar Terms </td> </tr>
+<tr> 
+	<td> Northern Term </td>
+	<td> Days after Periapsis </td>
+	<td> Southern Term </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Lichun / Imbolc </td>
+	<td> ${seasons[0][0]} </td>
+	<td> Liqiu / Lunasa </td>
+</tr>
+<tr> 
+	<td> Spring Equinox </td>
+	<td> ${seasons[0][1]} </td>
+	<td> Autumn Equinox </td>
+</tr>
+<tr> 
+	<td> Lixia / Bealtaine </td>
+	<td> ${seasons[0][2]} </td>
+	<td> Lidong / Samhain </td>
+</tr>
+<tr> 
+	<td> Summer Solstice </td>
+	<td> ${seasons[0][3]} </td>
+	<td> Winter Solstice </td>
+</tr>
+<tr> 
+	<td> Liqiu / Lunasa </td>
+	<td> ${seasons[0][4]} </td>
+	<td> Lichun / Imbolc </td>
+</tr>
+<tr> 
+	<td> Autumn Equinox </td>
+	<td> ${seasons[0][5]} </td>
+	<td> Spring Equinox </td>
+</tr>
+<tr> 
+	<td> Lidong / Samhain </td>
+	<td> ${seasons[0][6]} </td>
+	<td> Lixia / Bealtaine </td>
+</tr>
+<tr> 
+	<td> Winter Solstice </td>
+	<td> ${seasons[0][7]} </td>
+	<td> Summer Solstice </td>
+</tr>
+</tbody>
+`;
+body.appendChild(solar_terms_table);
+
+const astro_seasons_table = document.createElement("table");
+astro_seasons_table.innerHTML = `
+<thead>
+<tr> <td colspan="3"> Lengths of Astronomical Seasons </td> </tr>
+<tr> 
+	<td> Northern Season </td>
+	<td> Length (days) </td>
+	<td> Southern Season </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Spring </td>
+	<td> ${seasons[1][0]} </td>
+	<td> Autumn </td>
+</tr>
+<tr> 
+	<td> Summer  </td>
+	<td> ${seasons[1][1]} </td>
+	<td> Winter </td>
+</tr>
+<tr> 
+	<td> Autumn </td>
+	<td> ${seasons[1][2]} </td>
+	<td> Spring </td>
+</tr>
+<tr> 
+	<td> Winter </td>
+	<td> ${seasons[1][3]} </td>
+	<td> Summer  </td>
+</tr>
+</tbody>
+`;
+body.appendChild(astro_seasons_table);
+
+
+const solar_seasons_table = document.createElement("table");
+solar_seasons_table.innerHTML = `
+<thead>
+<tr> <td colspan="3"> Lengths of Solar Seasons </td> </tr>
+<tr> 
+	<td> Northern Season </td>
+	<td> Length (days) </td>
+	<td> Southern Season </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Spring </td>
+	<td> ${seasons[2][0]} </td>
+	<td> Autumn </td>
+</tr>
+<tr> 
+	<td> Summer  </td>
+	<td> ${seasons[2][1]} </td>
+	<td> Winter </td>
+</tr>
+<tr> 
+	<td> Autumn </td>
+	<td> ${seasons[2][2]} </td>
+	<td> Spring </td>
+</tr>
+<tr> 
+	<td> Winter </td>
+	<td> ${seasons[2][3]} </td>
+	<td> Summer  </td>
+</tr>
+</tbody>
+`;
+body.appendChild(solar_seasons_table);
 
 body.innerHTML += "<h2> Eclipse Properties </h2>";
-body.innerHTML += "<p> Lunar nodal precession: " + precessions[0].toString() + " dy/rev </p>";
-body.innerHTML += "<p> Lunar apsidal precession: " + precessions[1].toString() + " dy/rev </p>";
-body.innerHTML += "<p> Draconic month: " + precessions[2].toString() + " dy </p>";
-body.innerHTML += "<p> Anomalistic month: " + precessions[3].toString() + " dy </p>";
-body.innerHTML += "<p> Eclipse year: " + precessions[4].toString() + " dy </p>";
-body.innerHTML += "<p> Eclipse cycles: " + dec_to_frac((precessions[2]/2)/moon_synodic).join(" or ") + " S.M./half-D.M.</p>";
+var precessions = calculate_precessions(m);
+
+const precession_table = document.createElement("table");
+precession_table.innerHTML = `
+<thead>
+<tr> <td colspan="3"> Precession Properties </td> </tr>
+<tr> 
+	<td> Property </td>
+	<td> Value </td>
+	<td> Unit </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Lunar Nodal Precession </td>
+	<td> ${precessions[0]} </td>
+	<td> days / rev </td>
+</tr>
+<tr> 
+	<td> Lunar Apsidal Precession </td>
+	<td> ${precessions[1]} </td>
+	<td> days / rev </td>
+</tr>
+<tr> 
+	<td> Anomalistic Month </td>
+	<td> ${precessions[2]} </td>
+	<td> days </td>
+</tr>
+<tr> 
+	<td> Draconic Month </td>
+	<td> ${precessions[3]} </td>
+	<td> days </td>
+</tr>
+<tr> 
+	<td> Eclipse Year </td>
+	<td> ${precessions[4]} </td>
+	<td> days </td>
+</tr>
+</tbody>
+`;
+body.appendChild(precession_table);
+
+const eclipse_cycle_table = document.createElement("table");
+eclipse_cycle_table.innerHTML = `
+<thead>
+<tr> <td colspan="4"> Eclipse Cycles </td> </tr>
+<tr> 
+	<td> Half-EY : SM </td>
+	<td> Delta xi (degrees) </td>
+	<td> Years </td>
+	<td> A.M. </td>
+</tr>
+
+</thead>
+<tbody>
+`;
+
+var eclipse_cycles = dec_to_frac(moon_synodic/(precessions[4]/2));
+for (let i = 0; i < eclipse_cycles.length; i++) {
+	let quotient = eclipse_cycles[i][1] * moon_synodic / precessions[4];
+	let error = (quotient - Math.floor(quotient)) * 360;
+	error = Math.min(error, 360 - error);
+	error = Math.min(error, Math.abs(error-180), Math.abs(180-error));
+	let text = "<tr> <td>" + eclipse_cycles[i][0].toString() + " : " + eclipse_cycles[i][1].toString() + "</td> <td>" + error.toString() + "</td> ";
+	text += "<td>" + (eclipse_cycles[i][1] * moon_synodic / earth_period).toString() + "</td> <td>" + (eclipse_cycles[i][1] * moon_synodic / precessions[2]).toString() + "</td> </tr>";
+	eclipse_cycle_table.innerHTML += text;
+}
+
+eclipse_cycle_table.innerHTML += "</tbody>";
+body.appendChild(eclipse_cycle_table);
+
+body.innerHTML += "<p> Eclipse cycles: " + dec_to_frac(moon_synodic/(precessions[4]/2)).join(" or ") + " half-E.Y./S.M.</p>";
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
+}
+
+function surface_gravity(M, R) {
+	return G * M / R / R * 1000;
 }
 
 function dec_to_frac(number) {
@@ -103,7 +391,7 @@ function dec_to_frac(number) {
 			denominator = denoms[j] * denominator + numerator_copy;
 		}
 		
-		fracs.push(numerator.toString() + "/" + denominator.toString());
+		fracs.push([numerator,denominator]);
 	}
 	return(fracs);
 }
@@ -160,10 +448,10 @@ function calculate_precessions(m) {
 	apsidal = 1/apsidal * earth_period;
 
 	nodal = -6793.47709618;
-	apsidal = 3233.0;
+	apsidal = 3232.6054285
 
-	let draconic = -nodal * moon_period / (-nodal + moon_period);
 	let anomalistic = apsidal * moon_period / (apsidal - moon_period);
+	let draconic = -nodal * moon_period / (-nodal + moon_period);
 	let eclipse_year = -nodal * earth_period / (-nodal + earth_period);
-	return [nodal, apsidal , draconic, anomalistic, eclipse_year];
+	return [nodal, apsidal , anomalistic, draconic, eclipse_year];
 }
