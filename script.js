@@ -479,7 +479,7 @@ for (let i = 0; i < eclipse_cycles.length; i++) {
 			text +=  "<td>" + (2 + Math.floor(2 * eclipse_seasons[1][j] / error)).toString() + "</td>";
 		}
 	}
-	text += "<td>" + Math.floor((eclipse_cycles[i][0] * moon_synodic / earth_period) * (1 + Math.floor(2 * eclipse_seasons[1][0] / error))).toString() + " </td></tr>";
+	text += "<td>" + (eclipse_cycles[i][0] * moon_synodic / earth_period) * (1 + Math.floor(2 * eclipse_seasons[1][0] / error)).toString() + " </td></tr>";
 
 	eclipse_cycle_longevity_table.innerHTML = text;
 }
