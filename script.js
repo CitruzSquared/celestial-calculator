@@ -364,7 +364,7 @@ text = `
 <tbody>
 `;
 
-var eclipse_cycles = dec_to_frac((precessions[3]/2) / moon_synodic , 15);
+var eclipse_cycles = dec_to_frac((precessions[3]/2) / moon_synodic , 12);
 for (let i = 0; i < eclipse_cycles.length; i++) {
 	let quotient = eclipse_cycles[i][0] * moon_synodic / precessions[4];
 	let error = (quotient - Math.floor(quotient)) * 360;
@@ -398,7 +398,7 @@ const eclipse_seasons_table = document.createElement("table");
 eclipse_seasons = calculate_eclipse_seasons();
 eclipse_seasons_table.innerHTML = `
 <thead>
-<tr  class="title"> <td colspan="4"> Mean Eclipse Conditions </td> </tr>
+<tr  class="title"> <td colspan="4"> Average Eclipse Conditions </td> </tr>
 <tr> 
 	<td> Eclipse Type </td>
 	<td> Beta less than (deg) </td>
@@ -440,6 +440,52 @@ eclipse_seasons_table.innerHTML = `
 </tbody>
 `;
 body.appendChild(eclipse_seasons_table);
+
+const eclipse_cycle_longevity_table = document.createElement("table");
+text = `
+<thead>
+<tr  class="title"> <td colspan="6"> Approximate Eclipse Cycle Longevities </td> </tr>
+<tr> 
+	<td> Eclipse Cycle </td>
+	<td> Total Num Solar </td>
+	<td> Num Central Solar </td>
+	<td> Total Num Lunar </td>
+	<td> Num Total Lunar </td>
+	<td> Longevity (years) </td>
+</tr>
+
+</thead>
+<tbody>
+`;
+for (let i = 0; i < eclipse_cycles.length; i++) {
+	let quotient = eclipse_cycles[i][0] * moon_synodic / precessions[4];
+	let error = (quotient - Math.floor(quotient)) * 2 * pi;
+	let error_2 = (quotient - Math.floor(quotient) - 1) * 2 * pi;
+	let error_3 = (quotient - Math.floor(quotient) - 0.5) * 2 * pi;
+	if (Math.abs(error_2) < Math.abs(error)) {
+		error = error_2;
+	}
+	if (Math.abs(error_3) < Math.abs(error)) {
+		error = error_3;
+	}
+	error = Math.abs(error);
+	text += "<tr "
+	if (i % 2 == 1) {
+		text += "class='even'"
+	}
+	text += "> <td>" + eclipse_cycles[i][0].toString() + " : " + eclipse_cycles[i][1].toString() + "</td>"
+	for (let j = 0; j < eclipse_seasons[1].length; j++) {
+		if (j != 3) {
+			text +=  "<td>" + (2 + Math.floor(2 * eclipse_seasons[1][j] / error)).toString() + "</td>";
+		}
+	}
+	text += "<td>" + Math.floor((eclipse_cycles[i][0] * moon_synodic / earth_period) * (1 + Math.floor(2 * eclipse_seasons[1][0] / error))).toString() + " </td></tr>";
+
+	eclipse_cycle_longevity_table.innerHTML = text;
+}
+
+eclipse_cycle_longevity_table.innerHTML += "</tbody>";
+body.appendChild(eclipse_cycle_longevity_table);
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
