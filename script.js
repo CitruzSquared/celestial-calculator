@@ -487,6 +487,97 @@ for (let i = 0; i < eclipse_cycles.length; i++) {
 eclipse_cycle_longevity_table.innerHTML += "</tbody>";
 body.appendChild(eclipse_cycle_longevity_table);
 
+const solar_eclipse_table = document.createElement("table");
+perigee_aphelion = calculate_solar_eclipse(moon_periapsis, earth_apoapsis);
+apogee_perihelion = calculate_solar_eclipse(moon_apoapsis, earth_periapsis);
+sma_sma = calculate_solar_eclipse(moon_sma, earth_sma);
+solar_eclipse_table.innerHTML = `
+<thead>
+<tr  class="title"> <td colspan="6"> Approximate Solar Eclipse Details </td> </tr>
+<tr> 
+	<td> Moon Dist. </td>
+	<td> Earth Dist. </td>
+	<td> Eclipse Type </td>
+	<td> Magnitude </td>
+	<td> Path Width (km) </td>
+	<td> Central Duration (min) </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Periapsis </td>
+	<td> Apoapsis </td>
+	<td> ${perigee_aphelion[0]} </td>
+	<td> ${perigee_aphelion[1]} </td>
+	<td> ${perigee_aphelion[2]} </td>
+	<td> ${perigee_aphelion[3]} </td>
+</tr>
+<tr class='even'> 
+	<td> SMA </td>
+	<td> SMA </td>
+	<td> ${sma_sma[0]} </td>
+	<td> ${sma_sma[1]} </td>
+	<td> ${sma_sma[2]} </td>
+	<td> ${sma_sma[3]} </td>
+</tr>
+<tr> 
+	<td> Apoapsis </td>
+	<td> Periapsis </td>
+	<td> ${apogee_perihelion[0]} </td>
+	<td> ${apogee_perihelion[1]} </td>
+	<td> ${apogee_perihelion[2]} </td>
+	<td> ${apogee_perihelion[3]} </td>
+</tr>
+</tbody>
+`;
+body.appendChild(solar_eclipse_table);
+
+const lunar_eclipse_table = document.createElement("table");
+perigee_aphelion = calculate_lunar_eclipse(moon_periapsis, earth_apoapsis);
+apogee_perihelion = calculate_lunar_eclipse(moon_apoapsis, earth_periapsis);
+sma_sma = calculate_lunar_eclipse(moon_sma, earth_sma);
+lunar_eclipse_table.innerHTML = `
+<thead>
+<tr  class="title"> <td colspan="6"> Approximate Lunar Eclipse Details </td> </tr>
+<tr> 
+	<td> Moon Dist. </td>
+	<td> Earth Dist. </td>
+	<td> Umbra Diam. (deg) </td>
+	<td> Penumbral Duration (min) </td>
+	<td> Partial Duration (min) </td>
+	<td> Total Duration (min) </td>
+</tr>
+</thead>
+<tbody>
+<tr> 
+	<td> Periapsis </td>
+	<td> Apoapsis </td>
+	<td> ${perigee_aphelion[0]} </td>
+	<td> ${perigee_aphelion[1]} </td>
+	<td> ${perigee_aphelion[2]} </td>
+	<td> ${perigee_aphelion[3]} </td>
+</tr>
+<tr class='even'> 
+	<td> SMA </td>
+	<td> SMA </td>
+	<td> ${sma_sma[0]} </td>
+	<td> ${sma_sma[1]} </td>
+	<td> ${sma_sma[2]} </td>
+	<td> ${sma_sma[3]} </td>
+</tr>
+<tr> 
+	<td> Apoapsis </td>
+	<td> Periapsis </td>
+	<td> ${apogee_perihelion[0]} </td>
+	<td> ${apogee_perihelion[1]} </td>
+	<td> ${apogee_perihelion[2]} </td>
+	<td> ${apogee_perihelion[3]} </td>
+</tr>
+</tbody>
+`;
+body.appendChild(lunar_eclipse_table);
+
+
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
 }
@@ -601,4 +692,42 @@ function calculate_eclipse_seasons() {
 		xi_array.push(Math.asin(Math.tan(beta_array[i]) / Math.tan(moon_inclination)));
 	}
 	return [beta_array, xi_array];
+}
+
+function calculate_solar_eclipse(r_moon, r_sun) {
+	let moon_semidiameter = Math.asin(moon_radius / r_moon);
+	let sun_semidiameter = Math.asin(sun_radius / r_sun);
+	let type;
+	if (moon_semidiameter < sun_semidiameter) {
+		type = "Annular";
+	} else {
+		type = "Total";
+	}
+
+	let f = Math.asin((sun_radius - moon_radius) / (r_sun - r_moon));
+	let c = r_moon - moon_radius / Math.sin(f);
+	let i = Math.tan(f);
+	let l = i * c;
+	let L = Math.abs(l - i * earth_radius);
+
+	let rotational_speed = 2 * pi * earth_radius / day;
+	let orbital_speed = Math.sqrt(G * earth_mass * (2 / r_moon - 1 / moon_sma)) * 3600;
+
+	return [type, moon_semidiameter / sun_semidiameter, L * 2, Math.abs(2 * L / (orbital_speed - rotational_speed)) * 60];
+}
+
+function calculate_lunar_eclipse(r_moon, r_sun) {
+	let moon_semidiameter = Math.asin(moon_radius / r_moon);
+	let sun_semidiameter = Math.asin(sun_radius / r_sun);
+	let moon_parallax = Math.asin(earth_radius / r_moon);
+	let sun_parallax = Math.asin(earth_radius / r_sun);
+
+	let penumbra = moon_parallax + sun_semidiameter + sun_parallax;
+	let umbra = moon_parallax - sun_semidiameter + sun_parallax;
+	
+	let orbital_speed = Math.sqrt(G * earth_mass * (2 / r_moon - 1 / moon_sma)) * 60;
+	let penumbral_duration = 2 * (penumbra + moon_semidiameter) * r_moon / orbital_speed;
+	let partial_duration = 2 * (umbra + moon_semidiameter) * r_moon / orbital_speed;
+	let total_duration = 2 * (umbra - moon_semidiameter) * r_moon / orbital_speed;
+	return [umbra * 2 * 180 / pi , penumbral_duration, partial_duration, total_duration]
 }
