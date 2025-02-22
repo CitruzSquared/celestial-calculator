@@ -305,9 +305,8 @@ solar_seasons_table.innerHTML = `
 `;
 body.appendChild(solar_seasons_table);
 
-body.innerHTML += "<h2> Eclipse Properties </h2>";
+body.innerHTML += "<h2> Precession Properties </h2>";
 var precessions = calculate_precessions(m);
-
 const precession_table = document.createElement("table");
 precession_table.innerHTML = `
 <thead>
@@ -347,6 +346,35 @@ precession_table.innerHTML = `
 </tbody>
 `;
 body.appendChild(precession_table);
+
+body.innerHTML += "<h2> Supermoon Properties </h2>";
+const supermoon_cycle_table = document.createElement("table");
+text = `
+<thead>
+<tr  class="title"> <td colspan="2"> Supermoon Cycles </td> </tr>
+<tr> 
+	<td> SM : AM </td>
+	<td> Error (months/1day) </td>
+</tr>
+
+</thead>
+<tbody>
+`;
+var supermoon_cycles = dec_to_frac(precessions[2] / moon_synodic , 10);
+for (let i = 0; i < supermoon_cycles.length; i++) {
+	text += "<tr "
+	if (i % 2 == 1) {
+		text += "class='even'"
+	}
+	let error = 
+	text += "> <td>" + supermoon_cycles[i][0].toString() + " : " + supermoon_cycles[i][1].toString() + "</td> <td>" + (1/(moon_synodic * supermoon_cycles[i][0] - precessions[2] * supermoon_cycles[i][1])).toString() + "</td> ";
+	supermoon_cycle_table.innerHTML = text;
+}
+
+supermoon_cycle_table.innerHTML += "</tbody>";
+body.appendChild(supermoon_cycle_table);
+
+body.innerHTML += "<h2> Eclipse Properties </h2>";
 
 const eclipse_cycle_table = document.createElement("table");
 text = `
