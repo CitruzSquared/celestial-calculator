@@ -57,6 +57,19 @@
 	input:focus {
 		background-color: #353535;
 	}
+	button {
+		margin-left: 20pt;
+		width: 100px;
+		height: 50px;
+		font-family: 'Sofia Pro', sans-serif;
+		font-size: 12pt;
+		border: 2px solid #ffffff;
+		color: #ffffff;
+		background-color: #000000;
+	}
+	button:hover {
+		background-color: #404040;
+	}
     </style>
 </head>
 
@@ -164,21 +177,23 @@
 </tr>
 <tr>
 	<td> Nodal Precession Period of Moon</td>
-	<td class="inputbox"> <input type="number" id="moon_nodal" placeholder="6793.4771">  </td>
+	<td class="inputbox"> <input type="number" id="moon_nodal" placeholder="6793.47709618">  </td>
 	<td> Planet days/rev </td>
 	<td> <input type="checkbox" id="nodal_auto"> </td>
 </tr>
 <tr>
 	<td> Apsidal Precession Period of Moon</td>
-	<td class="inputbox"> <input type="number" id="moon_apsidal" placeholder="3232.6054">  </td>
+	<td class="inputbox"> <input type="number" id="moon_apsidal" placeholder="3232.6054285">  </td>
 	<td> Planet days/rev </td>
 	<td> <input type="checkbox" id="apsidal_auto"> </td>
 </tr>
 <tr>
-	<td colspan="4"> Enter only positive numbers. Do not leave any field blank except if Auto Calculate is checked. </td>
+	<td colspan="4"> Do not leave any field blank except if Auto Calculate is checked. </td>
 </tr>
 </tbody>
 </table>
+<button type="button" onclick="initialize()">Calculate</button>
+<div id="main"> </div>
 <script src="script.js"> </script>
 </body>
 </html>
