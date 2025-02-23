@@ -114,6 +114,46 @@ basic_table.innerHTML = `
 `;
 body.appendChild(basic_table);
 
+const visual_table = document.createElement("table");
+visual_table.innerHTML = `
+<thead>
+<tr  class="title"> <td colspan="5"> Observation Properties </td> </tr>
+<tr> 
+	<td> Property (degrees) </td>
+	<td> At Periapsis </td>
+	<td> At SMA </td>
+	<td> At Apoapsis </td>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td> Moon Semidiameter </td>
+	<td> ${Math.asin(moon_radius / moon_periapsis) * 180 / pi} </td>
+	<td> ${Math.asin(moon_radius / moon_sma) * 180 / pi} </td>
+	<td> ${Math.asin(moon_radius / moon_apoapsis) * 180 / pi} </td>
+</tr>
+<tr class="even">
+	<td> Sun Semidiameter </td>
+	<td> ${Math.asin(sun_radius / earth_periapsis) * 180 / pi} </td>
+	<td> ${Math.asin(sun_radius / earth_sma) * 180 / pi} </td>
+	<td> ${Math.asin(sun_radius / earth_apoapsis) * 180 / pi} </td>
+</tr>
+<tr>
+	<td> Moon Horiz. Parallax </td>
+	<td> ${Math.asin(earth_radius / moon_periapsis) * 180 / pi} </td>
+	<td> ${Math.asin(earth_radius / moon_sma) * 180 / pi} </td>
+	<td> ${Math.asin(earth_radius / moon_apoapsis) * 180 / pi} </td>
+</tr>
+<tr class="even">
+	<td> Sun Horiz. Parallax </td>
+	<td> ${Math.asin(earth_radius / earth_periapsis) * 180 / pi} </td>
+	<td> ${Math.asin(earth_radius / earth_sma) * 180 / pi} </td>
+	<td> ${Math.asin(earth_radius / earth_apoapsis) * 180 / pi} </td>
+</tr>
+</tbody>
+`;
+body.appendChild(visual_table);
+
 body.innerHTML += "<h2> Calendar Properties </h2>";
 const solar_calendar_table = document.createElement("table");
 let text = `
