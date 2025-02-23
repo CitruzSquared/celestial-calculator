@@ -1,38 +1,77 @@
 var pi = Math.PI;
 var G = 6.674e-20;
+var body = document.getElementById("main");
 
-var earth_sma = 149598023.0;
-var earth_radius = 6378.137;
-var earth_mass = 5.972168e24;
-var earth_eccentricity = 0.0167086;
-var earth_AOP = 1.79676742118;
-var day = 24.0;
+var earth_sma;
+var earth_radius;
+var earth_mass;
+var earth_eccentricity;
+var earth_AOP;
+var earth_period;
+var day;
 
-var sun_radius = 695700.0;
-var sun_mass = 1.9885e30;
+var sun_radius;
+var sun_mass;
 
-var moon_sma = 384399.0;
-var moon_radius = 1737.4;
-var moon_mass = 7.346e22;
-var moon_eccentricity = 0.0549;
-var moon_inclination = 0.08979719001;
+var moon_sma;
+var moon_radius;
+var moon_mass;
+var moon_eccentricity;
+var moon_inclination;
+var moon_period;
 
-var body = document.body;
+var earth_periapsis;
+var moon_periapsis;
+var earth_apoapsis;
+var moon_apoapsis;
+var moon_synodic;
+var m;
+var months_in_year;
 
-// --------------------
+var nodal;
+var apsidal;
 
-var earth_periapsis = earth_sma * (1 - earth_eccentricity);
-var earth_apoapsis = earth_sma * (1 + earth_eccentricity);
-var moon_periapsis = moon_sma * (1 - moon_eccentricity);
-var moon_apoapsis = moon_sma * (1 + moon_eccentricity);
+function initialize() {
+	earth_sma = document.getElementById("earth_sma").value * 1e6;
+	earth_radius = document.getElementById("earth_radius").value;
+	earth_mass = document.getElementById("earth_mass").value * 1e24;
+	earth_eccentricity = document.getElementById("earth_eccentricity").value * 1;
+	earth_AOP = document.getElementById("earth_aop").value * pi / 180;
+	day = document.getElementById("hours_day").value * 1;
 
-var earth_period = period(sun_mass, earth_mass, earth_sma);
-var moon_period = period(earth_mass, moon_mass, moon_sma);
-earth_period = 365.256363004;
-var moon_period = 27.321661554
-var moon_synodic = earth_period * moon_period / (earth_period - moon_period);
-var m =  moon_period / earth_period;
-var months_in_year = earth_period / moon_synodic;
+	sun_radius = document.getElementById("sun_radius").value * 1;
+	sun_mass = document.getElementById("sun_mass").value * 1e30;
+
+	moon_sma = document.getElementById("moon_sma").value * 1e3;
+	moon_radius = document.getElementById("moon_radius").value * 1;
+	moon_mass = document.getElementById("moon_mass").value * 1e22;
+	moon_eccentricity = document.getElementById("moon_eccentricity").value * 1;
+	moon_inclination = document.getElementById("moon_inclination").value * pi / 180;
+
+	earth_periapsis = earth_sma * (1 - earth_eccentricity);
+	earth_apoapsis = earth_sma * (1 + earth_eccentricity);
+	moon_periapsis = moon_sma * (1 - moon_eccentricity);
+	moon_apoapsis = moon_sma * (1 + moon_eccentricity);
+	
+	if (document.getElementById("earth_period_auto").checked) {
+		earth_period = period(sun_mass, earth_mass, earth_sma);
+	} else {
+		earth_period = document.getElementById("earth_period").value * 1;
+	}
+	if (document.getElementById("moon_period_auto").checked) {
+		moon_period = period(earth_mass, moon_mass, moon_sma);
+	} else {
+		moon_period = document.getElementById("moon_period").value * 1;
+	}
+	moon_synodic = earth_period * moon_period / (earth_period - moon_period);
+	m =  moon_period / earth_period;
+	months_in_year = earth_period / moon_synodic;
+	make_tables();
+}
+
+function make_tables() {
+body.innerHTML = "";
+
 
 body.innerHTML += "<h2> Basic Properties </h2>";
 const basic_table = document.createElement("table");
@@ -354,7 +393,7 @@ text = `
 <tr  class="title"> <td colspan="2"> Supermoon Cycles </td> </tr>
 <tr> 
 	<td> SM : AM </td>
-	<td> Error (months/1day) </td>
+	<td> Error (cycles/1day) </td>
 </tr>
 
 </thead>
@@ -604,7 +643,7 @@ lunar_eclipse_table.innerHTML = `
 </tbody>
 `;
 body.appendChild(lunar_eclipse_table);
-
+}
 
 function period(mass1, mass2, sma) {
 	return Math.sqrt(4 * pi * pi * sma * sma * sma / (G * (mass1 + mass2))) / 3600 / day;
@@ -684,13 +723,18 @@ function calculate_seasons() {
 }
 
 function calculate_precessions(m) {
-	let nodal = -3/4*m + 9/32*Math.pow(m,2) + 273/128*Math.pow(m,3) + 9797/2048*Math.pow(m,4) + 199273/24576*Math.pow(m,5) + 6657733/589825*Math.pow(m,6);
-	let apsidal = 3/4*m + 225/32*Math.pow(m,2) + 4071/128*Math.pow(m,3) + 265493/2048*Math.pow(m,4) + 12822631/24576*Math.pow(m,5) + 1273925965/589824*Math.pow(m,6) + 66702631253/7077888*Math.pow(m,7) + 29726828924189/679477248*Math.pow(m,8);
-	nodal = 	1/nodal * earth_period;
-	apsidal = 1/apsidal * earth_period;
-
-	nodal = -6793.47709618;
-	apsidal = 3232.6054285
+	if (document.getElementById("nodal_auto").checked) {
+		nodal = -3/4*m + 9/32*Math.pow(m,2) + 273/128*Math.pow(m,3) + 9797/2048*Math.pow(m,4) + 199273/24576*Math.pow(m,5) + 6657733/589825*Math.pow(m,6);
+		nodal = 1/nodal * earth_period;
+	} else {
+		nodal = -1 * document.getElementById("moon_nodal").value * 1;
+	} 
+	if (document.getElementById("apsidal_auto").checked) {
+		apsidal = 3/4*m + 225/32*Math.pow(m,2) + 4071/128*Math.pow(m,3) + 265493/2048*Math.pow(m,4) + 12822631/24576*Math.pow(m,5) + 1273925965/589824*Math.pow(m,6) + 66702631253/7077888*Math.pow(m,7) + 29726828924189/679477248*Math.pow(m,8);
+		apsidal = 1/apsidal * earth_period;
+	} else {
+		apsidal = document.getElementById("moon_apsidal").value * 1;
+	}
 
 	let anomalistic = apsidal * moon_period / (apsidal - moon_period);
 	let draconic = -nodal * moon_period / (-nodal + moon_period);
